@@ -1,6 +1,8 @@
 import cv2
 import time 
 import math
+import cvzone
+import numpy as np
 import mediapipe as mp 
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision 
@@ -28,6 +30,21 @@ HAND_CONNECTIONS = [
 ]
 
 p_time = 0
+
+# x is the value of the distace that we are getting 
+# y is the distance from the camera to the hand we get in cm
+x = [300, 220, 190, 150, 135, 115, 105, 85]
+y = [20, 25, 30, 35, 40, 50, 60, 70]
+
+# As the relation is not linear so we have to make a polinomial equation
+
+#   Like Y = Ax^2 + Bx + C
+#   So for every x value it give us the value of y that matches the above tabel
+
+# Here comes the numpy function polyfit (x, y, degree)
+
+coff = np.polyfit(x, y, 2)
+
 
 cap = cv2.VideoCapture(0)
 cap.set(3, 1280)
@@ -63,18 +80,30 @@ while True:
             x1, y1 = lm_list[5]
             x2, y2 = lm_list[17]
 
+            distance = int(math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)) 
+
+            A, B, C = coff
+
+            distanceCM = int(A*distance**2 + B*distance + C)
+            print(distance, distanceCM)
+
             for start, end in HAND_CONNECTIONS:
                 cv2.line(img, lm_list[start], lm_list[end], (0, 255, 0), 2)
             
             for x, y in lm_list:
                 cv2.circle(img, (x, y), 6, (255, 0, 0), -1)
 
+
+            cvzone.putTextRect(img,
+                               f"{distanceCM}cm",
+                               (x_min-20, y_min-35),
+                               )
             cv2.rectangle(
                 img,
-                (x_max, y_min),
-                (x_max, y_max),
+                (x_min-20, y_min-20),
+                (x_max+20, y_max+20),
                 (0, 255, 0),
-                cv2.FILLED
+                2
             )
 
     c_time = time.time()
