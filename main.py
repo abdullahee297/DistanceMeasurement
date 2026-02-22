@@ -85,7 +85,7 @@ while True:
             A, B, C = coff
 
             distanceCM = int(A*distance**2 + B*distance + C)
-            print(distance, distanceCM)
+            # print(distance, distanceCM)
 
             for start, end in HAND_CONNECTIONS:
                 cv2.line(img, lm_list[start], lm_list[end], (0, 255, 0), 2)
